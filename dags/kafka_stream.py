@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from github import Github  # GitHub API library
+from github import Github
 import json
 from kafka import KafkaProducer
 import time
@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 # GitHub API credentials
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")  # Replace with your GitHub token
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 KAFKA_BROKER = "broker:29092"
 KAFKA_TOPIC = "github_repos"
 
