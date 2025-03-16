@@ -1,80 +1,83 @@
-
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-import praw  # Reddit API library
+from github import Github  # GitHub API library
 import json
 from kafka import KafkaProducer
 import time
 import logging
+import os
+from dotenv import load_dotenv
 
-reddit = praw.Reddit(
-    client_id="Y2ti-Pk00ZGsHzHRnEjBwlw",
-    client_secret="_wlnPiQDdsdtm5oDng18HzhmVLzZ_g",
-    user_agent="python:reddit_analytics_pipeline:v1.0",
-)
+load_dotenv()
+# GitHub API credentials
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")  # Replace with your GitHub token
+KAFKA_BROKER = "broker:29092"
+KAFKA_TOPIC = "github_repos"
+
+# Initialize GitHub API client
+github = Github(GITHUB_TOKEN)
 
 default_args = {
     'owner': 'Lina',
-    'start_date': datetime(2023, 9, 3, 10, 00)
+    'start_date': datetime(2023, 9, 3, 10, 00),
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
 }
 
-def get_reddit_data():
+def get_github_data():
     """
-    Fetch real-time Reddit posts from the 'all' subreddit.
+    Fetch the latest GitHub repositories with high stars.
     """
-    subreddit = reddit.subreddit("all")  # Monitor all subreddits
-    posts = []
-    for post in subreddit.stream.submissions():
-        posts.append(post)
-        if len(posts) >= 10:  # Fetch 10 posts for each batch
-            break
-    return posts
+    days_ago = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+    query = f"stars:>1000 created:>{days_ago}"
+    repos = github.search_repositories(query, sort="stars", order="desc")[:10]
+    return [repo for repo in repos]
 
-def format_reddit_data(post):
+def format_github_data(repo):
     """
-    Format Reddit post data for Kafka.
+    Format GitHub repository data for Kafka.
     """
     data = {
-        "id": post.id,
-        "title": post.title,
-        "subreddit": post.subreddit.display_name,
-        "author": post.author.name if post.author else "Unknown",
-        "upvotes": post.score,
-        "comments": post.num_comments,
-        "created_utc": post.created_utc,
-        "url": post.url,
+        "id": repo.id,
+        "name": repo.full_name,
+        "stars": repo.stargazers_count,
+        "forks": repo.forks_count,
+        "language": repo.language,
+        "created_at": repo.created_at.isoformat(),
+        "updated_at": repo.updated_at.isoformat(),
+        "url": repo.html_url,
     }
     return data
 
-def stream_reddit_data():
+def stream_github_data():
     """
-    Stream Reddit posts to Kafka.
+    Stream GitHub repository data to Kafka.
     """
-    producer = KafkaProducer(bootstrap_servers=['broker:29092'], max_block_ms=5000)
+    producer = KafkaProducer(bootstrap_servers=[KAFKA_BROKER], max_block_ms=5000)
     curr_time = time.time()
 
     while True:
-        if time.time() > curr_time + 60:  # Stream for 1 minute
+        if time.time() > curr_time + 60:
             break
         try:
-            posts = get_reddit_data()
-            for post in posts:
-                formatted_data = format_reddit_data(post)
-                producer.send('reddit_posts', json.dumps(formatted_data).encode('utf-8'))
+            repos = get_github_data()
+            for repo in repos:
+                formatted_data = format_github_data(repo)
+                producer.send(KAFKA_TOPIC, json.dumps(formatted_data).encode('utf-8'))
                 logging.info(f"Published to Kafka: {formatted_data}")
         except Exception as e:
             logging.error(f'An error occurred: {e}')
             continue
 
 # Define the DAG
-with DAG('reddit_analytics',
+with DAG('github_automation',
          default_args=default_args,
          schedule_interval='@daily',  # Run daily
          catchup=False) as dag:
 
     streaming_task = PythonOperator(
-        task_id='stream_reddit_data',
-        python_callable=stream_reddit_data
+        task_id='stream_github_data',
+        python_callable=stream_github_data
     )
