@@ -5,9 +5,10 @@
 
 2. **Process Data**  
    Perform real-time processing and analysis of the data using **Apache Spark** for streaming.
+   Perform batch analysis of the data using **Apache Spark SQl** .
 
-3. **Store Data**  
+4. **Store Data**  
    Store the processed data in **Apache Cassandra** for efficient querying and retrieval.
 
-4. **Containerize the Pipeline**  
-   Use **Docker** to containerize the entire pipeline, ensuring easy deployment and scalability.
+5. **Containerize the Pipeline**  
+   Use **Docker** to containerize the entire pipeline.
