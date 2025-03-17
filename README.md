@@ -1,9 +1,13 @@
-The pipeline is built to:
+## The pipeline is built to:
 
-Ingest data from the GitHub API using Apache Airflow and Apache Kafka.
+1. **Ingest Data**  
+   Fetch data from the GitHub API using **Apache Airflow** and stream it using **Apache Kafka**.
 
-Process data in real-time using Apache Spark for streaming and analysis.
+2. **Process Data**  
+   Perform real-time processing and analysis of the data using **Apache Spark** for streaming.
 
-Store processed data in Apache Cassandra for efficient querying and retrieval.
+3. **Store Data**  
+   Store the processed data in **Apache Cassandra** for efficient querying and retrieval.
 
-Containerize the pipeline using Docker for easy deployment and scalability.
+4. **Containerize the Pipeline**  
+   Use **Docker** to containerize the entire pipeline, ensuring easy deployment and scalability.
