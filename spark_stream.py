@@ -2,7 +2,7 @@ import logging
 from cassandra.cluster import Cluster
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_json, col
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType, TimestampType
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 
 # Define the schema for GitHub repository data
 github_schema = StructType([
@@ -73,10 +73,13 @@ def create_spark_connection():
     try:
         spark_conn = SparkSession.builder \
             .appName('GitHubDataStreaming') \
-            .config('spark.jars.packages', "com.datastax.spark:spark-cassandra-connector_2.13:3.4.1,"
-                                           "org.apache.spark:spark-sql-kafka-0-10_2.13:3.4.1") \
+            .config('spark.jars.packages', "com.datastax.spark:spark-cassandra-connector_2.12:3.5.0,"
+                                           "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0") \
             .config('spark.cassandra.connection.host', 'localhost') \
+            .config('spark.network.timeout', '600s') \
+            .config('spark.executor.heartbeatInterval', '60s') \
             .getOrCreate()
+
         spark_conn.sparkContext.setLogLevel("ERROR")
         logging.info("Spark connection created successfully!")
         return spark_conn
@@ -108,7 +111,8 @@ def create_selection_df_from_kafka(spark_df):
     sel = spark_df.selectExpr("CAST(value AS STRING)") \
         .select(from_json(col('value'), github_schema).alias('data')) \
         .select("data.*") \
-        .filter(col("language").isNotNull() & (col("language") != "Unknown"))  # Filter out null/unknown languages
+        .filter(col("language").isNotNull() & (col("language") != "Unknown") & (col("language") != "null"))
+    logging.info("Parsed Kafka data successfully!")
     return sel
 
 def create_cassandra_connection():
@@ -118,13 +122,14 @@ def create_cassandra_connection():
     try:
         cluster = Cluster(['localhost'])
         session = cluster.connect()
+        logging.info("Connected to Cassandra successfully!")
         return session
     except Exception as e:
         logging.error(f"Could not create Cassandra connection due to: {e}")
         return None
 
 if __name__ == "__main__":
-
+    logging.basicConfig(level=logging.INFO)
     spark_conn = create_spark_connection()
 
     if spark_conn is not None:
@@ -133,21 +138,18 @@ if __name__ == "__main__":
         if spark_df is not None:
             # Parse and filter the Kafka DataFrame
             selection_df = create_selection_df_from_kafka(spark_df)
-
             # Create Cassandra connection
             session = create_cassandra_connection()
             if session is not None:
                 # Create keyspace and table
                 create_keyspace(session)
                 create_table(session)
-
                 logging.info("Streaming is being started...")
-
                 # Write the streaming data to Cassandra
                 streaming_query = (selection_df.writeStream.format("org.apache.spark.sql.cassandra")
                                    .option('checkpointLocation', '/tmp/checkpoint')
                                    .option('keyspace', 'github_streams')
                                    .option('table', 'repositories')
                                    .start())
-
+                logging.info(f"Streaming query started! Status: {streaming_query.status}")
                 streaming_query.awaitTermination()

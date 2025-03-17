@@ -1,4 +1,3 @@
-version: '3'
 
 services:
   zookeeper:
@@ -164,6 +163,8 @@ services:
     networks:
       - confluent
 
+
+
   spark-master:
     image: bitnami/spark:latest
     command: bin/spark-class org.apache.spark.deploy.master.Master
@@ -198,5 +199,6 @@ services:
       - CASSANDRA_PASSWORD=cassandra
     networks:
       - confluent
+
 networks:
   confluent:

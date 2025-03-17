@@ -80,5 +80,3 @@ with DAG('github_automation',
         task_id='stream_github_data',
         python_callable=stream_github_data
     )
-
-stream_github_data()
