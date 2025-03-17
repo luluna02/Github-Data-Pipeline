@@ -14,7 +14,6 @@ load_dotenv()
 # GitHub API credentials
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 KAFKA_BROKER = "broker:29092"
-KAFKA_TOPIC = "github_repos"
 
 # Initialize GitHub API client
 github = Github(GITHUB_TOKEN)
@@ -55,7 +54,7 @@ def stream_github_data():
     """
     Stream GitHub repository data to Kafka.
     """
-    producer = KafkaProducer(bootstrap_servers=['localhost:9092'], max_block_ms=5000)
+    producer = KafkaProducer(bootstrap_servers=[KAFKA_BROKER], max_block_ms=5000)
     curr_time = time.time()
 
     while True:
@@ -72,14 +71,14 @@ def stream_github_data():
             continue
 
 # Define the DAG
-#with DAG('github_automation',
-         #default_args=default_args,
-         #schedule_interval='@daily',  # Run daily
-         #catchup=False) as dag:
+with DAG('github_automation',
+         default_args=default_args,
+         schedule_interval='@daily',  # Run daily
+         catchup=False) as dag:
 
-    #streaming_task = PythonOperator(
-        #task_id='stream_github_data',
-       # python_callable=stream_github_data
-    #)
+    streaming_task = PythonOperator(
+        task_id='stream_github_data',
+        python_callable=stream_github_data
+    )
 
 stream_github_data()
