@@ -1,4 +1,5 @@
-<img width="530" alt="Screenshot 2025-03-18 at 4 09 58 PM" src="https://github.com/user-attachments/assets/06a8f1a3-4b2e-4b17-999c-6fb67616456f" />
+![Untitled Diagram drawio](https://github.com/user-attachments/assets/24a74f7b-719b-4efb-a5ea-4dc89b95e505)
+
 
 ## The pipeline is built to:
 
