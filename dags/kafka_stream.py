@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 # GitHub API credentials
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-KAFKA_BROKER = "broker:29092"
+KAFKA_BROKER = "broker:9092"
 
 # Initialize GitHub API client
 github = Github(GITHUB_TOKEN)
@@ -30,7 +30,7 @@ def get_github_data():
     Fetch the latest GitHub repositories with high stars.
     """
     days_ago = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
-    query = f"stars:>1000 created:>{days_ago}"
+    query = f"stars:>500 created:>{days_ago}"
     repos = github.search_repositories(query, sort="stars", order="desc")[:10]
     return [repo for repo in repos]
 

@@ -1,0 +1,10 @@
+FROM bitnami/spark:3.5.1-debian-12-r12
+
+COPY requirements.txt .
+
+USER root
+
+RUN apt-get clean  && \
+	apt-get update && \
+	apt-get install -y python3-pip && \
+	pip3 install --no-cache-dir -r ./requirements.txt
