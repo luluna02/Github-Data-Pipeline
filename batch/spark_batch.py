@@ -10,8 +10,8 @@ def create_spark_connection():
     try:
         spark_conn = SparkSession.builder \
             .appName('GitHubBatchProcessing') \
-            .config('spark.jars.packages', "com.datastax.spark:spark-cassandra-connector_2.12:3.5.0") \
-            .config('spark.cassandra.connection.host', 'localhost') \
+            .config('spark.jars.packages', "com.datastax.spark:spark-cassandra-connector_2.12:3.5.1") \
+            .config('spark.cassandra.connection.host', 'cassandra') \
             .getOrCreate()
         spark_conn.sparkContext.setLogLevel("ERROR")
         logging.info("Spark connection created successfully!")
