@@ -91,32 +91,24 @@ def write_to_cassandra(parsed_df):
         .option("checkpointLocation", "/tmp/checkpoints") \
         .outputMode("append") \
         .start()
-# Main function to orchestrate the streaming process
 
 if __name__ == "__main__":
-    # Define Kafka broker and topic
+
     kafka_broker = "broker:9092"
     topic = "github_repos"
 
-    # Step 1: Define the schema
     schema = define_schema()
 
-    # Step 2: Initialize Spark session
     spark = initialize_spark_session()
 
-    # Step 3: Read data from Kafka
     kafka_df = read_from_kafka(spark, kafka_broker, topic)
 
-    # Step 4: Parse the Kafka data
     parsed_df = parse_kafka_data(kafka_df, schema)
 
     session = create_cassandra_connection()
     create_keyspace(session)
     create_table(session)
 
-    # Step 5: Write the parsed data to the console
-    #query = write_to_console(parsed_df)
     query = write_to_cassandra(parsed_df)
 
-    # Step 6: Await termination
     query.awaitTermination()
