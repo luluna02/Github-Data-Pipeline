@@ -45,7 +45,6 @@ docker compose up -d
 docker exec -it src-spark-master-1 spark-submit \
   --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1 \
   --packages com.datastax.spark:spark-cassandra-connector_2.12:3.5.1 \
-  --master spark://src-spark-master-1:7077 \
+  --master spark://localhost:7077 \
   spark_batch.py
 ```
-Make sure the master url uses the correct container name.
