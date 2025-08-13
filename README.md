@@ -1,5 +1,6 @@
 
-<img width="1191" alt="Screenshot 2025-03-24 at 4 41 49 PM" src="https://github.com/user-attachments/assets/6e58f6c1-e38d-48c4-be6a-4bc2b2fdf28c" />
+<img width="940" height="336" alt="Screenshot 2025-08-13 at 4 35 26 PM" src="https://github.com/user-attachments/assets/b940f2f1-6624-463a-8b5d-a3d60b1e2615" />
+
 
 
 ## The pipeline is built to:
