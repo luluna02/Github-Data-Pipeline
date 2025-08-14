@@ -47,5 +47,5 @@ docker exec -it src-spark-master-1 spark-submit \
   --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1 \
   --packages com.datastax.spark:spark-cassandra-connector_2.12:3.5.1 \
   --master spark://localhost:7077 \
-  spark_batch.py
+  spark_stream.py
 ```
